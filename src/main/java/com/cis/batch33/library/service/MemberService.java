@@ -37,9 +37,9 @@ public class MemberService {
 
     }
 
-    public String deleteMember(Integer memberId){
+    public void  deleteMember(Integer memberId){
         memberRepository.deleteById(memberId);
-        return "Member deleted";
+        //return "Member deleted";
     }
 }
 

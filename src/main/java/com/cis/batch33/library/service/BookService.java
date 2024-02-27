@@ -3,6 +3,7 @@ package com.cis.batch33.library.service;
 import com.cis.batch33.library.entity.LibraryBook;
 import com.cis.batch33.library.entity.LibraryMember;
 import com.cis.batch33.library.repository.LibraryBookRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,8 +36,9 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    public String deleteBook(Integer bookId){
+    @Transactional
+    public void  deleteBook(Integer bookId){
         bookRepository.deleteById(bookId);
-        return "Book deleted";
+        //return "Book deleted";
     }
 }

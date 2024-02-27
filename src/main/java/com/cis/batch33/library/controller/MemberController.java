@@ -30,7 +30,7 @@ public class MemberController {
     }
 
     @DeleteMapping
-    public String deleteMember(Integer memberId){
-        return memberService.deleteMember(memberId);
+    public void deleteMember(Integer memberId){
+         memberService.deleteMember(memberId);
     }
 }

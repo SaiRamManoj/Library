@@ -30,7 +30,7 @@ public class BookController {
     }
 
     @DeleteMapping
-    public String deleteBook(Integer bookId){
-        return bookService.deleteBook(bookId);
+    public void deleteBook(Integer bookId){
+        bookService.deleteBook(bookId);
     }
 }
