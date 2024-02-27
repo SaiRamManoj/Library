@@ -23,4 +23,14 @@ public class MemberController {
     public LibraryMember createMember(@RequestBody LibraryMember member){
         return memberService.createMember(member);
     }
+
+    @PutMapping
+    public LibraryMember updateMember(@RequestBody LibraryMember member){
+        return memberService.updateMember(member);
+    }
+
+    @DeleteMapping
+    public String deleteMember(Integer memberId){
+        return memberService.deleteMember(memberId);
+    }
 }

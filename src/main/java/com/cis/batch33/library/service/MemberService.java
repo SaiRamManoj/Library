@@ -19,9 +19,13 @@ public class MemberService {
     public LibraryMember createMember(LibraryMember member){
 
         // call the database
-        Integer memberId = new Random().nextInt();
+        Integer memberId = Math.abs(new Random().nextInt());
         member.setMemberId(memberId);
 
+        return memberRepository.save(member);
+    }
+
+    public LibraryMember updateMember(LibraryMember member){
         return memberRepository.save(member);
     }
 
@@ -31,6 +35,11 @@ public class MemberService {
                memberRepository.findById(memberId);
        return  memberOptional.orElse(new LibraryMember());
 
+    }
+
+    public String deleteMember(Integer memberId){
+        memberRepository.deleteById(memberId);
+        return "Member deleted";
     }
 }
 
