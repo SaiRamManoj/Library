@@ -14,7 +14,7 @@ public class MemberController {
     private MemberService memberService;
 
     @GetMapping
-    public LibraryMember getMember(Integer memberId){
+    public Member getMember(Integer memberId){
         return memberService.getMember(memberId);
     }
 

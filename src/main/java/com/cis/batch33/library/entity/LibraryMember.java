@@ -1,10 +1,9 @@
 package com.cis.batch33.library.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Table(name="library_member")
 @Entity
@@ -25,18 +24,23 @@ public class LibraryMember {
     private String emailAddress;
 
     @Column(name="phone_number")
-    private Long phoneNumber;
+    private String phoneNumber;
 
     @Column(name="membership_level")
     private String memberShipLevel;
 
-    @Column(name="address_id")
-    private Long addressId;
 
+
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name= "address_id")
+    private Address address;
+
+
+
+    @OneToMany(mappedBy = "libraryMember")
+    private List<Checkout> checkouts;
     // lombok
-
-
-
 }
 
 
