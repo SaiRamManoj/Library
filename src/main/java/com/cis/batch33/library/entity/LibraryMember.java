@@ -24,23 +24,25 @@ public class LibraryMember {
     private String emailAddress;
 
     @Column(name="phone_number")
-    private String phoneNumber;
+    private Long phoneNumber;
 
     @Column(name="membership_level")
     private String memberShipLevel;
 
+    @Column(name = "address_id", insertable = false, updatable = false)
+    private Long addressId;
 
-
-
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name= "address_id")
+    @ManyToOne
+    @JoinColumn(name="address_id")
     private Address address;
 
-
-
-    @OneToMany(mappedBy = "libraryMember")
+    @OneToMany(mappedBy = "libraryMember", cascade = CascadeType.ALL)
     private List<Checkout> checkouts;
+
     // lombok
+
+
+
 }
 
 

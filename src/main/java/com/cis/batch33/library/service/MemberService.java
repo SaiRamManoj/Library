@@ -1,11 +1,17 @@
 package com.cis.batch33.library.service;
 
+import com.cis.batch33.library.entity.Address;
+import com.cis.batch33.library.entity.BookIsbn;
+import com.cis.batch33.library.entity.Checkout;
 import com.cis.batch33.library.entity.LibraryMember;
+import com.cis.batch33.library.model.Book;
+import com.cis.batch33.library.model.Member;
 import com.cis.batch33.library.model.AddressDTO;
 import com.cis.batch33.library.model.CheckoutDTO;
-import com.cis.batch33.library.model.Member;
-import com.cis.batch33.library.repository.LIbraryMemberRepository;
+//import com.cis.batch33.library.repository.LibraryBookRepository;
+import com.cis.batch33.library.repository.LibraryMemberRepository;
 import jakarta.persistence.PersistenceContext;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,24 +20,61 @@ import java.util.stream.Collectors;
 
 @Service
 public class MemberService {
-
-
     @Autowired
-    private LIbraryMemberRepository memberRepository;
+    private LibraryMemberRepository memberRepository;
+    /*@Autowired
+    private LibraryBookRepository libraryBookRepository;*/
 
-    public LibraryMember createMember(LibraryMember member){
+    //private Map<Long, Member> memberMap = new HashMap<>();
+
+    public Member createMember(Member member){
 
         // call the database
         //Integer memberId = new Random().nextInt();
         //member.setMemberId(memberId);
         //memberMap.put(memberId, member);
         //return  member;
-        return memberRepository.save(member);
+
+        // Create a new LibraryMember object
+        LibraryMember libraryMember = new LibraryMember();
+
+        // Manually map properties from LibraryMemberDTO to LibraryMember
+        BeanUtils.copyProperties(member, libraryMember);
+
+        // If the address field is not null, map its properties to LibraryMember's Address
+        if (member.getAddress() != null) {
+            Address address = new Address();
+            BeanUtils.copyProperties(member.getAddress(), address);
+            libraryMember.setAddress(address);
+        }
+
+        // If the checkouts field is not null, map its properties to LibraryMember's Checkouts
+        if (member.getCheckouts() != null) {
+            List<Checkout> checkouts = member.getCheckouts().stream().map(dto -> {
+                Checkout checkout = new Checkout();
+                BeanUtils.copyProperties(dto, checkout);
+                return checkout;
+            }).collect(Collectors.toList());
+            libraryMember.setCheckouts(checkouts);
+        }
+
+        // Save the LibraryMember to the database
+        LibraryMember savedLibraryMember = memberRepository.save(libraryMember);
+
+        // Create a new Member object to return
+        Member savedMember = new Member();
+
+        // Manually map properties from saved LibraryMember to Member
+        BeanUtils.copyProperties(savedLibraryMember, savedMember);
+
+        // Return the saved LibraryMember
+        return savedMember;
+
     }
 
 
     public Member getMember(Integer memberId) {
-        //return memberMap.get(memberId);
+    //return memberMap.get(memberId);
         Optional<LibraryMember> memberOptional =
                 memberRepository.findById(memberId);
         LibraryMember libraryMember =
@@ -71,53 +114,87 @@ public class MemberService {
 
     }
 
-    public LibraryMember updateMember(LibraryMember member) {
+    public Member updateMember(Member member) {
         //Integer memberId = member.getMemberId();
         //memberMap.put(memberId, LibraryMember);
-        return memberRepository.save(member);
+//        return memberRepository.save(member);
+
+        // Create a new LibraryMember object
+        LibraryMember libraryMember = new LibraryMember();
+
+        // Manually map properties from LibraryMemberDTO to LibraryMember
+        BeanUtils.copyProperties(member, libraryMember);
+
+        // If the address field is not null, map its properties to LibraryMember's Address
+        if (member.getAddress() != null) {
+            Address address = new Address();
+            BeanUtils.copyProperties(member.getAddress(), address);
+            libraryMember.setAddress(address);
+        }
+
+        // If the checkouts field is not null, map its properties to LibraryMember's Checkouts
+        if (member.getCheckouts() != null) {
+            List<Checkout> checkouts = member.getCheckouts().stream().map(dto -> {
+                Checkout checkout = new Checkout();
+                BeanUtils.copyProperties(dto, checkout);
+                return checkout;
+            }).collect(Collectors.toList());
+            libraryMember.setCheckouts(checkouts);
+        }
+
+        // Save the LibraryMember to the database
+        LibraryMember savedLibraryMember = memberRepository.save(libraryMember);
+
+        // Create a new Member object to return
+        Member savedMember = new Member();
+
+        // Manually map properties from saved LibraryMember to Member
+        BeanUtils.copyProperties(savedLibraryMember, savedMember);
+
+        // Return the saved LibraryMember
+        return savedMember;
+
     }
 
     public void deleteMember(Integer memberId) {
         memberRepository.deleteById(memberId);
-        //return "Member deleted";
     }
 }
-
 // relational databases ( SQL )
-    // tables and rows, foreign key, structured
-    // mysql, oracle, postgres, db2, H2 Microsoft Sql Server
-    // SQL - structured query language
-    // programming -
-    // create and manage tables - DDL - data definition language
-    // create and manage data within tables - DML - Data manipulation
-    // access control - DCL - data control language
-    // install mysql
+// tables and rows, foreign key, structured
+// mysql, oracle, postgres, db2, H2 Microsoft Sql Server
+// SQL - structured query language
+// programming -
+// create and manage tables - DDL - data definition language
+// create and manage data within tables - DML - Data manipulation
+// access control - DCL - data control language
+// install mysql
 // TOAD, mysql workbench - IDE
 
 // non- relational databases ( No-SQL)
-    // unstructured
-    // document based - mongodb,
-    // key value database - redis, dynamodb,  cassandra
-    // graph database -
+// unstructured
+// document based - mongodb,
+// key value database - redis, dynamodb,  cassandra
+// graph database -
 
 
 // schema
-    // tables
-        // rows and columns
-    // functions -
-    // stored procedures -
+// tables
+// rows and columns
+// functions -
+// stored procedures -
 
 // user name and password
 
 
 // JAVA to Database connectivity
 
-        //  JDBC package , java.sql.*
+//  JDBC package , java.sql.*
 
-        // Connection - url, username and password, mysql - driver
-        // PreparedStatement
-        // ResultSet
-        // CallabaleStatement
+// Connection - url, username and password, mysql - driver
+// PreparedStatement
+// ResultSet
+// CallabaleStatement
 
 // ORM - object relational mapping
 // JPA Repositories

@@ -1,13 +1,12 @@
 package com.cis.batch33.library.entity;
 
-import com.cis.batch33.library.entity.LibraryMember;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
 
-@Entity
 @Table(name="address")
+@Entity
 @Data
 public class Address {
     @Id
@@ -17,8 +16,6 @@ public class Address {
     private String city;
     private String state;
     private Integer zip;
-
-    @OneToMany(mappedBy = "address")
+    @OneToMany(mappedBy = "address",cascade = CascadeType.ALL)
     private List<LibraryMember> members;
-
 }

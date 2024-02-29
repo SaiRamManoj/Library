@@ -1,144 +1,154 @@
 package com.cis.batch33.library.service;
 
-import com.cis.batch33.library.entity.Book;
 import com.cis.batch33.library.entity.BookIsbn;
-import com.cis.batch33.library.model.BookDTO;
+import com.cis.batch33.library.entity.LibraryBook;
+import com.cis.batch33.library.model.Book;
 import com.cis.batch33.library.model.BookIsbnDTO;
+import com.cis.batch33.library.model.CheckoutDTO;
 import com.cis.batch33.library.repository.LibraryBookRepository;
-import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
 public class BookService {
-
+    //private Map<Long, Book> bookMap = new HashMap<>();
     @Autowired
     private LibraryBookRepository bookRepository;
+    public BookService(LibraryBookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+    public Book createBook(Book book){
 
-    public BookDTO createBook(BookDTO bookDTO){
+        // call the database
+        //Integer bookId = new Random().nextInt();
+        //book.setBookId(bookId);
+        //bookMap.put(bookId, book);
+        /*LibraryBook libraryBook = new LibraryBook();
+        book.setBookId(libraryBook.getBookId());
+        book.setTitle(libraryBook.getTitle());
+        book.setAuthorName(libraryBook.getAuthorName());
+        book.setYearPublished(libraryBook.getYearPublished());
+        book.setQuantity(libraryBook.getQuantity());*/
 
-        Book lb = new Book();
-        lb.setTitle(bookDTO.getTitle());
-        lb.setQuantity(bookDTO.getQuantity());
-        lb.setAuthorName(bookDTO.getAuthorName());
-        lb.setYearPublished(bookDTO.getYearPublished());
+//        return  bookRepository.save(book);
+        // Create a new LibraryBook object
+        LibraryBook libraryBook = new LibraryBook();
 
+        // Manually map properties from Book to LibraryBook
+        BeanUtils.copyProperties(book, libraryBook);
 
-        // Example of generating and adding multiple ISBNs
-        List<BookIsbn> bookIsbns = new ArrayList<>();
-        for (int i = 0; i < bookDTO.getQuantity(); i++) {
-            BookIsbn bk = new BookIsbn();
-            // Optionally set the ISBN value here, if you have a method to generate or assign it
-            // bk.setIsbn(generateIsbn()); // Assuming generateIsbn() is a method to generate an ISBN
-            bk.setBook(lb);
-            bookIsbns.add(bk);
-        }
+        // Map BookIsbn objects from Book to LibraryBook
+        List<BookIsbn> bookIsbns = book.getBookIsbns().stream().map(bi -> {
+            BookIsbn bookIsbn = new BookIsbn();
+            BeanUtils.copyProperties(bi, bookIsbn);
+            bookIsbn.setLibraryBook(libraryBook); // Set LibraryBook reference for each BookIsbn
+            return bookIsbn;
+        }).collect(Collectors.toList());
 
-        // Set the list of ISBNs to the LibraryBook
-        lb.setBookIsbns(bookIsbns);
+        // Set the BookIsbn list to the LibraryBook
+        libraryBook.setBookIsbns(bookIsbns);
 
-        // Save the LibraryBook (and cascadingly, the BookIsbn(s)) to the database
-        Book lbr = bookRepository.save(lb);
+        // Save the LibraryBook to the database
+        LibraryBook savedLibraryBook = bookRepository.save(libraryBook);
 
-        // Update the original book object with the generated bookId
-        bookDTO.setBookId(lbr.getBookId());
+        // Create a new Book object to return
+        Book savedBook = new Book();
 
-        // Assuming you want to return a Book object, make sure it reflects any changes
-        // For example, if you want to include the generated ISBNs in the returned object, you should update it accordingly
-        Optional<Book> bookOptional = bookRepository.findById(lbr.getBookId());
-        Book book =
-                bookOptional.orElse(new Book());
+        // Manually map properties from saved LibraryBook to Book
+        BeanUtils.copyProperties(savedLibraryBook, savedBook);
 
-        BookDTO bookDTO1 = new BookDTO();
-        bookDTO1.setBookId(book.getBookId());
-        bookDTO1.setTitle(book.getTitle());
-        bookDTO1.setAuthorName(book.getAuthorName());
-        bookDTO1.setYearPublished(book.getYearPublished());
-        bookDTO1.setQuantity(book.getQuantity());
+        // Manually map BookIsbn objects from saved LibraryBook to Book
+        List<BookIsbnDTO> savedBookIsbns = savedLibraryBook.getBookIsbns().stream().map(savedBi -> {
+            BookIsbnDTO savedBiDto = new BookIsbnDTO();
+            BeanUtils.copyProperties(savedBi, savedBiDto);
+            return savedBiDto;
+        }).collect(Collectors.toList());
+
+        // Set the BookIsbnDTO list to the Book
+        savedBook.setBookIsbns(savedBookIsbns);
+
+        return savedBook;
+    }
+
+    public Book getBook(Integer bookId) {
+        Optional<LibraryBook> bookOptional =
+                bookRepository.findById(bookId);
+        LibraryBook libraryBook =
+                bookOptional.orElse(new LibraryBook());
+
+        Book book = new Book();
+        book.setBookId(libraryBook.getBookId());
+        book.setTitle(libraryBook.getTitle());
+        book.setAuthorName(libraryBook.getAuthorName());
+        book.setYearPublished(libraryBook.getYearPublished());
+        book.setQuantity(libraryBook.getQuantity());
 
         List<BookIsbnDTO> bookIsbnDTOS =
-                book.getBookIsbns().stream().map(b -> {
+                libraryBook.getBookIsbns().stream().map(b -> {
                     BookIsbnDTO bdo = new BookIsbnDTO();
                     bdo.setIsbn(b.getIsbn());
-                    bdo.setBookId(lbr.getBookId());
+                    bdo.setBookId(b.getBookId());
                     return bdo;
                 }).collect(Collectors.toList());
 
-        bookDTO1.setBookIsbns(bookIsbnDTOS);
+        /*BookIsbnDTO bookIsbnDTO = new BookIsbnDTO();
+        bookIsbnDTO.setBookIsbn(libraryBook.getBookIsbn().getIsbn());
+        bookIsbnDTO.setBookId(libraryBook.getBookIsbn().getBookId());
+*/
+        book.setBookIsbns(bookIsbnDTOS);
 
-        return bookDTO1;
+        return book;
     }
 
-    public BookDTO getBook(int bookId) {
-        Optional<Book> bookOptional = bookRepository.findById(bookId);
-        Book book =
-                bookOptional.orElse(new Book());
+    public Book updateBook(Book book) {
+        //Integer bookId = LibraryBook.getBookId();
+        //bookMap.put(bookId, book);
+        //return bookRepository.save(LibraryBook);
 
-        BookDTO bookDTO = new BookDTO();
-        bookDTO.setBookId(book.getBookId());
-        bookDTO.setTitle(book.getTitle());
-        bookDTO.setAuthorName(book.getAuthorName());
-        bookDTO.setYearPublished(book.getYearPublished());
-        bookDTO.setQuantity(book.getQuantity());
+        // Create a new LibraryBook object
+        LibraryBook libraryBook = new LibraryBook();
 
-        List<BookIsbnDTO> bookIsbnDTOS =
-                book.getBookIsbns().stream().map(b -> {
-                    BookIsbnDTO bdo = new BookIsbnDTO();
-                    bdo.setIsbn(b.getIsbn());
-                    bdo.setBookId(bookId);
-                    return bdo;
-                }).collect(Collectors.toList());
+        // Manually map properties from Book to LibraryBook
+        BeanUtils.copyProperties(book, libraryBook);
 
-        bookDTO.setBookIsbns(bookIsbnDTOS);
+        // Map BookIsbn objects from Book to LibraryBook
+        List<BookIsbn> bookIsbns = book.getBookIsbns().stream().map(bi -> {
+            BookIsbn bookIsbn = new BookIsbn();
+            BeanUtils.copyProperties(bi, bookIsbn);
+            bookIsbn.setLibraryBook(libraryBook); // Set LibraryBook reference for each BookIsbn
+            return bookIsbn;
+        }).collect(Collectors.toList());
 
-        return bookDTO;
-    }
+        // Set the BookIsbn list to the LibraryBook
+        libraryBook.setBookIsbns(bookIsbns);
 
-    public Book updateBook(int bookId, Book updatedBook) {
-        //return bookRepository.save(updatedBook);
-        // Retrieve the existing LibraryBook from the database
-        Book existingBook = bookRepository.findById(updatedBook.getBookId())
-                .orElseThrow(() -> new EntityNotFoundException("Book not found"));
+        // Save the LibraryBook to the database
+        LibraryBook savedLibraryBook = bookRepository.save(libraryBook);
 
-        // Update the fields of the existing LibraryBook with the new values
-        existingBook.setTitle(updatedBook.getTitle());
-        existingBook.setAuthorName(updatedBook.getAuthorName());
-        existingBook.setYearPublished(updatedBook.getYearPublished());
+        // Create a new Book object to return
+        Book savedBook = new Book();
 
-        int newQuantity = updatedBook.getQuantity();
-        int currentQuantity = existingBook.getQuantity();
+        // Manually map properties from saved LibraryBook to Book
+        BeanUtils.copyProperties(savedLibraryBook, savedBook);
 
-        // Adjust ISBN records based on the change in quantity
-        if (newQuantity > currentQuantity) {
-            // Increase ISBN records
-            List<BookIsbn> bookIsbns = new ArrayList<>();
-            for (int i = 0; i < newQuantity - currentQuantity; i++) {
-                BookIsbn newIsbn = new BookIsbn();
-                newIsbn.setBook(existingBook);
-                existingBook.getBookIsbns().add(newIsbn);
-            }
-        } else if (newQuantity < currentQuantity) {
-            // Decrease ISBN records
-            int recordsToRemove = currentQuantity - newQuantity;
-            List<BookIsbn> isbnsToRemove = existingBook.getBookIsbns().subList(0, recordsToRemove);
-            existingBook.getBookIsbns().removeAll(isbnsToRemove);
-        }
+        // Manually map BookIsbn objects from saved LibraryBook to Book
+        List<BookIsbnDTO> savedBookIsbns = savedLibraryBook.getBookIsbns().stream().map(savedBi -> {
+            BookIsbnDTO savedBiDto = new BookIsbnDTO();
+            BeanUtils.copyProperties(savedBi, savedBiDto);
+            return savedBiDto;
+        }).collect(Collectors.toList());
 
-        // Update the quantity
-        existingBook.setQuantity(newQuantity);
+        // Set the BookIsbnDTO list to the Book
+        savedBook.setBookIsbns(savedBookIsbns);
 
-        // Save the updated LibraryBook (and cascadingly, the BookIsbn(s)) to the database
-        Book updatedLibraryBook = bookRepository.save(existingBook);
-
-        // Update the original book object with the updated values
-        updatedBook.setQuantity(updatedLibraryBook.getQuantity());
-
-        return updatedBook;
+        return savedBook;
     }
 
     public void deleteBook(Integer bookId) {

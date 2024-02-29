@@ -8,12 +8,10 @@ import java.util.List;
 @Table(name="book")
 @Entity
 @Data
-public class Book {
-
+public class LibraryBook {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="book_id")
-    private int bookId;
+    private Integer bookId;
 
     @Column(name="title")
     private String title;
@@ -22,12 +20,11 @@ public class Book {
     private String authorName;
 
     @Column(name="year_published")
-    private int yearPublished;
+    private Integer yearPublished;
 
     @Column(name="quantity")
-    private int quantity;
+    private Integer quantity;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "libraryBook", cascade = CascadeType.ALL)
     private List<BookIsbn> bookIsbns;
-
 }

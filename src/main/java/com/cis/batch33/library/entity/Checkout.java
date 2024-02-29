@@ -1,13 +1,12 @@
 package com.cis.batch33.library.entity;
 
-import com.cis.batch33.library.entity.LibraryMember;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.Date;
 
-@Entity
 @Table(name="checkout")
+@Entity
 @Data
 public class Checkout {
     @Id
@@ -19,5 +18,4 @@ public class Checkout {
     private Date checkoutDate;
     private Date dueDate;
     private boolean isReturned;
-
 }
